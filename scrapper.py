@@ -157,6 +157,50 @@ def EngineH(notifier, pagesX):
                 pass
     return list(set(domains))
 
+def EngineH2(notifier, pagesX):
+    pages = []
+    domains = []
+    i = 1
+    if pagesX == 1:
+        pages.append(str(1))
+    else:
+        while i <= pagesX:
+            pages.append(str(i))
+            i += 1
+
+    with webdriver.Chrome() as browser:
+        for page in pages:
+            url = 'https://www.zone-h.org/archive/filter=1/published=0/domain={}/fulltext=1/page={}'.format(notifier, page)
+            browser.get(url)
+            try:
+                if 'name="captcha"' in str(browser.page_source):
+                    input('Captcha Detected! Answer the Captcha and press ENTER to continue...')
+                    browser.get(url)
+                    urls = findall('<td>(.*)\n							</td>', str(browser.page_source))
+                    for url in list(set(urls)):
+                        if url.startswith('http://'):
+                            url = url.replace('http://', '')
+                        elif url.startswith("https://"):
+                            url = url.replace('https://', '')
+                        else:
+                            pass
+                        domains.append(url)
+                        print(url)
+                else:
+                    urls = findall('<td>(.*)\n							</td>', str(browser.page_source))
+                    for url in list(set(urls)):
+                        if url.startswith('http://'):
+                            url = url.replace('http://', '')
+                        elif url.startswith("https://"):
+                            url = url.replace('https://', '')
+                        else:
+                            pass
+                        domains.append(url)
+                        print(url)
+            except Exception as e:
+                print(f"Error: {e}")
+    return list(set(domains))
+    
 def ZoneH(notifier, pages):
     Engine = EngineH(notifier, pages)
     print(Engine)
@@ -166,11 +210,22 @@ def ZoneH(notifier, pages):
                 url = str(url).split('/')[0]
             open('GrabbedSites_Zone-h.org.txt', 'a').write(url + '\n')
 
+def ZoneH2(notifier, pages):
+    Engine = EngineH2(notifier, pages)
+    print(Engine)
+    if len(Engine) != 0:
+        for url in Engine:
+            if '/' in str(url):
+                url = str(url).split('/')[0]
+            open('GrabbedSites_Zone-h.org.txt', 'a').write(url + '\n')
+
+
 
 print('-------------DOMAIN GRABBER @v3t4l1 -------------------')
 print('1= bing.com Scanner')
 print('2= Google.com Scanner')
 print('3= Zone-H.org Scanner')
+print('4= Zone-H.org Scanner/ TLD')
 print('---------------------------------------------')
 selector = input(' [Engine-Selector]: ')
 if selector == str(1):
@@ -185,3 +240,7 @@ elif selector == str(3):
     Notifier = input(' [zone-h.org] Notifier: ')
     pages = int(input(' [zone-h.org] page { How much pages you want get? }: '))
     ZoneH(Notifier, pages)
+elif selector == str(4):
+    Notifier = input(' [zone-h.org] TLD: ')
+    pages = int(input(' [zone-h.org] page { How much pages you want get? }: '))
+    ZoneH2(Notifier, pages)
